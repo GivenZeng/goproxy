@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewCache(cachePath string) (c *cache, err error) {
+func NewCache() (c *cache, err error) {
 	return &cache{
 		m:     make(map[string]*item),
 		mutex: new(sync.RWMutex),
@@ -17,6 +17,8 @@ func NewCache(cachePath string) (c *cache, err error) {
 type item struct {
 	content []byte
 	expire  int64 // 过期时间
+
+	// todo：应该把响应的header也缓存起来
 }
 
 // 一个极其简单的缓存器
@@ -29,7 +31,6 @@ type cache struct {
 func (c *cache) Store(key string, content []byte, ttl time.Duration) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	c.Del(key)
 	data := &item{
 		content: content,
 		expire:  time.Now().Add(ttl).Unix(),
@@ -42,17 +43,13 @@ func (c *cache) Get(key string) (content []byte, hitted bool) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 	item, hitted := c.m[key]
+	if !hitted {
+		return nil, false
+	}
 	if item.expire > time.Now().Unix() {
 		return item.content, hitted
 	}
 	return nil, false
-}
-
-func (c *cache) Del(key string) error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	delete(c.m, "key")
-	return nil
 }
 
 func (c *cache) clean() error {
@@ -78,6 +75,8 @@ func (c *cache) Run() {
 		<-t.C
 		if err := c.clean(); err != nil {
 			logrus.WithField("method", "Cache.run").Error(err)
+		} else {
+			logrus.WithField("method", "Cache.run").Info("success")
 		}
 	}
 }

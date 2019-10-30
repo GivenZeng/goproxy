@@ -1,0 +1,20 @@
+# port默认为为1088
+port: 1088
+# 并发量，默认5000
+parallel: 10000
+
+# 本地文件服务器路径
+root: "./"
+
+# 缓存目录，默认如下
+cache_path: /var/goproxy/cache
+# 缓存过期时间如下
+cache_expiration: 3m
+
+# 路由设置
+locations:
+  - 
+    path: "/a/b"
+    proxy_pass: "http://server.com"
+    # 缓存过期时间如下
+    cache_expiration: 3m

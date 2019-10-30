@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Srv struct {
@@ -28,13 +30,16 @@ func main() {
 	srv := new(Srv)
 	gpanic(parseConfig(srv, ""))
 
-	cache, err := NewCache(srv.CachePath)
+	cache, err := NewCache()
 	gpanic(err)
 	for _, l := range srv.Locations {
 		l.cache = cache
 	}
 	go cache.Run()
-	go http.ListenAndServe(":"+strconv.FormatInt(18080, 10), srv)
+
+	serving := ":" + strconv.Itoa(srv.Port)
+	go http.ListenAndServe(serving, srv)
+	logrus.Info("serving at" + serving)
 	waitKill()
 }
 
@@ -48,5 +53,6 @@ func waitKill() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
-	time.Sleep(time.Second * 30)
+	logrus.Info("stopping ...")
+	time.Sleep(time.Second * 5)
 }

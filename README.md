@@ -1,4 +1,6 @@
-一个使用go实现的反向代理服务器
+一个使用go实现的反向代理服务器.
+
+尚在开放中，还未提供cache control功能...
 
 ## config
 ```
@@ -22,6 +24,12 @@ locations:
     proxy_pass: "http://server.com"
     # 缓存过期时间如下
     cache_expiration: 3m
+```
+
+
+## build & run
+```
+make run
 ```
 
 ## archetecture

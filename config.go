@@ -9,14 +9,16 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func parseConfig(conf interface{}, filePath string) error {
+// 从yaml文件解析配置
+func parseConfig(conf interface{}, filePath string) (err error) {
 	if filePath == "" {
-		filePath, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		filePath, err = filepath.Abs(filepath.Dir(os.Args[0]))
 		if err != nil {
 			return err
 		}
-		filePath += "etc/conf.yaml"
+		filePath += "/etc/conf.yaml"
 	}
+	println(filePath)
 	yamlFile, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err

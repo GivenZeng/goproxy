@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type location struct {
@@ -16,10 +18,16 @@ type location struct {
 	cache           *cache
 }
 
+func (l *location) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	l.Handle(rw, req)
+}
+
 func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	// 先判断缓存中是否存在
+	logrus.WithField("origin path", req.URL.Path).Info("location handle")
 	content, hitted := l.cache.Get(req.URL.Path)
 	if hitted {
+		logrus.Info("hitted")
 		rw.Write(content)
 		rw.WriteHeader(http.StatusOK)
 		return
@@ -28,7 +36,14 @@ func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
-	proxyReq := req.Clone(ctx)
+	proxyReq, err := http.NewRequest(req.Method, l.proxyPass, req.Body)
+	if err != nil {
+		return
+	}
+	proxyReq = proxyReq.WithContext(ctx)
+	proxyReq.URL.RawQuery = req.URL.Query().Encode()
+	logrus.WithField("proxy url", proxyReq.URL.String()).Info("location handle: rewrite query")
+
 	if req.ContentLength == 0 {
 		proxyReq.Body = nil
 	}
@@ -55,6 +70,7 @@ func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		l.cache.Store(req.URL.Path, content, l.cacheExpiration)
 	}
+	logrus.WithField("content", string(content)).Info("location handle")
 
 	// TODO 移除和连接相关的header
 	copyHeader(res.Header, rw.Header())

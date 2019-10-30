@@ -1,4 +1,6 @@
 make:
 	go build -o goproxy *.go
 run:
-	go run *.go
+	cp -r etc_sample etc
+	make
+	./goproxy
