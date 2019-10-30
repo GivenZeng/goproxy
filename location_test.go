@@ -9,9 +9,9 @@ import (
 
 func TestLocation(t *testing.T) {
 	l := &location{
-		path:            "/a/b",
-		proxyPass:       "https://common.givenzeng.cn/mmdb",
-		cacheExpiration: time.Minute,
+		Path:            "/a/b",
+		ProxyPass:       "https://common.givenzeng.cn/mmdb",
+		CacheExpiration: time.Minute,
 	}
 
 	cache, err := NewCache()
@@ -19,7 +19,7 @@ func TestLocation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	l.cache = cache
+	l.Cache = cache
 
 	// req, err := http.NewRequest("GET", "http://localhost:18080?ip=123.123.123.123", nil)
 	if err != nil {

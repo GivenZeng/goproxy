@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/sirupsen/logrus"
+)
 
 func (srv *Srv) Validate() error {
 	if srv.Port == 0 {
@@ -20,14 +24,17 @@ func (srv *Srv) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	select {
 	case srv.limiter <- struct{}{}:
 		path := req.URL.Path
+		logrus.WithField("path", path).Info(req.URL.String())
 		// TODO use map
 		for _, l := range srv.Locations {
-			if l.path == path {
+			if l.Path == path {
+				logrus.Info("location = " + l.Path)
 				l.Handle(rw, req)
 			}
 		}
 		<-srv.limiter
 	default:
+		logrus.Info("parallel limit")
 		rw.WriteHeader(http.StatusServiceUnavailable)
 	}
 }

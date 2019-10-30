@@ -12,10 +12,10 @@ import (
 )
 
 type location struct {
-	path            string
-	proxyPass       string        `yaml:"proxy_pass"`
-	cacheExpiration time.Duration `yaml:"cache_expiration"`
-	cache           *cache
+	Path            string
+	ProxyPass       string        `yaml:"proxy_pass"`
+	CacheExpiration time.Duration `yaml:"cache_expiration"`
+	Cache           *cache
 }
 
 func (l *location) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -25,7 +25,7 @@ func (l *location) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	// 先判断缓存中是否存在
 	logrus.WithField("origin path", req.URL.Path).Info("location handle")
-	content, hitted := l.cache.Get(req.URL.Path)
+	content, hitted := l.Cache.Get(req.URL.Path)
 	if hitted {
 		logrus.Info("hitted")
 		rw.Write(content)
@@ -36,7 +36,7 @@ func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
-	proxyReq, err := http.NewRequest(req.Method, l.proxyPass, req.Body)
+	proxyReq, err := http.NewRequest(req.Method, l.ProxyPass, req.Body)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (l *location) Handle(rw http.ResponseWriter, req *http.Request) {
 	// TODO 直接全读不安全，无法知道content有多大
 	content, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		l.cache.Store(req.URL.Path, content, l.cacheExpiration)
+		l.Cache.Store(req.URL.Path, content, l.CacheExpiration)
 	}
 	logrus.WithField("content", string(content)).Info("location handle")
 

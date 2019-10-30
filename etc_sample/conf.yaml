@@ -14,7 +14,7 @@ cache_expiration: 3m
 # 路由设置
 locations:
   - 
-    path: "/a/b"
-    proxy_pass: "http://server.com"
+    path: "/ip"
+    proxy_pass: "https://common.givenzeng.cn/mmdb"
     # 缓存过期时间如下
     cache_expiration: 3m
