@@ -3,29 +3,7 @@
 尚在开放中，还未提供cache control功能...
 
 ## config
-```
-# port默认为为1088
-port: 1088
-# 并发量，默认5000
-paralle: 10000
-
-# 本地文件服务器路径
-root: "file path"
-
-# 缓存目录，默认如下
-cache_path: /var/goproxy/cache
-# 缓存过期时间如下
-cache_expiration: 3m
-
-# 路由设置
-locations:
-  - 
-    path: "/a/b"
-    proxy_pass: "http://server.com"
-    # 缓存过期时间如下
-    cache_expiration: 3m
-```
-
+见etc_sample
 
 ## build & run
 ```
